@@ -7,10 +7,10 @@ Signature   = "$Windows NT$"
 ; TODO - Change the Class and ClassGuid to match the Load Order Group value, see https://msdn.microsoft.com/en-us/windows/hardware/gg462963
 ; Class       = "ActivityMonitor"                         ;This is determined by the work this filter driver does
 ; ClassGuid   = {b86dff51-a31e-4bac-b3cf-e8cfe75c9fc2}    ;This value is determined by the Load Order Group value
-Class = "_TODO_Change_Class_appropriately_"
-ClassGuid = {_TODO_Change_ClassGuid_appropriately_}
+Class = "FSFilterSystem"
+ClassGuid = {5d1b9aaa-01e2-46af-849f-272b3f324c46}
 Provider    = %ManufacturerName%
-DriverVer   = 
+DriverVer   = 1.1.1.1
 CatalogFile = HideFiles.cat
 
 [DestinationDirs]
