@@ -18,21 +18,26 @@ Environment:
 #include <dontuse.h>
 #include <suppress.h>
 
+#pragma warning( disable : 4047 24 )
+
 #pragma prefast(disable:__WARNING_ENCODE_MEMBER_FUNCTION_POINTER, "Not valid for kernel mode drivers")
 
+#define DPFLTR_ERROR_LEVEL 0
+#define DPFLTR_WARNING_LEVEL 1
+#define DPFLTR_TRACE_LEVEL 2
+#define DPFLTR_INFO_LEVEL 3
+#define DPFLTR_MASK 0x80000000
 
 PFLT_FILTER gFilterHandle;
 ULONG_PTR OperationStatusCtx = 1;
 
-#define PTDBG_TRACE_ROUTINES            0x00000001
-#define PTDBG_TRACE_OPERATION_STATUS    0x00000002
 
-ULONG gTraceFlags = 0;
+ULONG gTraceFlags = 0xffffffff;
 
 
-#define PT_DBG_PRINT( _dbgLevel, _string )          \
-    (FlagOn(gTraceFlags,(_dbgLevel)) ?              \
-        DbgPrint _string :                          \
+#define PT_DBG_PRINT( _dbgLevel, _string )                                     \
+    (FlagOn(gTraceFlags,(_dbgLevel)) ?                                         \
+        DbgPrintEx(DPFLTR_IHVDRIVER_ID,_dbgLevel,_string) :                          \
         ((int)0))
 
 /*************************************************************************
@@ -402,7 +407,7 @@ Return Value:
 
     PAGED_CODE();
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesInstanceSetup: Entered\n") );
 
     return STATUS_SUCCESS;
@@ -444,7 +449,7 @@ Return Value:
 
     PAGED_CODE();
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesInstanceQueryTeardown: Entered\n") );
 
     return STATUS_SUCCESS;
@@ -480,7 +485,7 @@ Return Value:
 
     PAGED_CODE();
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesInstanceTeardownStart: Entered\n") );
 }
 
@@ -514,7 +519,7 @@ Return Value:
 
     PAGED_CODE();
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesInstanceTeardownComplete: Entered\n") );
 }
 
@@ -553,7 +558,7 @@ Return Value:
 
     UNREFERENCED_PARAMETER( RegistryPath );
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!DriverEntry: Entered\n") );
 
     //
@@ -610,7 +615,7 @@ Return Value:
 
     PAGED_CODE();
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesUnload: Entered\n") );
 
     FltUnregisterFilter( gFilterHandle );
@@ -658,7 +663,7 @@ Return Value:
     UNREFERENCED_PARAMETER( FltObjects );
     UNREFERENCED_PARAMETER( CompletionContext );
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesPreOperation: Entered\n") );
 
     //
@@ -677,7 +682,7 @@ Return Value:
                                                     (PVOID)(++OperationStatusCtx) );
         if (!NT_SUCCESS(status)) {
 
-            PT_DBG_PRINT( PTDBG_TRACE_OPERATION_STATUS,
+            PT_DBG_PRINT( DPFLTR_INFO_LEVEL,
                           ("HideFiles!HideFilesPreOperation: FltRequestOperationStatusCallback Failed, status=%08x\n",
                            status) );
         }
@@ -734,10 +739,10 @@ Return Value:
 {
     UNREFERENCED_PARAMETER( FltObjects );
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesOperationStatusCallback: Entered\n") );
 
-    PT_DBG_PRINT( PTDBG_TRACE_OPERATION_STATUS,
+    PT_DBG_PRINT( DPFLTR_INFO_LEVEL,
                   ("HideFiles!HideFilesOperationStatusCallback: Status=%08x ctx=%p IrpMj=%02x.%02x \"%s\"\n",
                    OperationStatus,
                    RequesterContext,
@@ -786,7 +791,7 @@ Return Value:
     UNREFERENCED_PARAMETER( CompletionContext );
     UNREFERENCED_PARAMETER( Flags );
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesPostOperation: Entered\n") );
 
     return FLT_POSTOP_FINISHED_PROCESSING;
@@ -828,7 +833,7 @@ Return Value:
     UNREFERENCED_PARAMETER( FltObjects );
     UNREFERENCED_PARAMETER( CompletionContext );
 
-    PT_DBG_PRINT( PTDBG_TRACE_ROUTINES,
+    PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesPreOperationNoPostOperation: Entered\n") );
 
     // This template code does not do anything with the callbackData, but

@@ -6,6 +6,9 @@ MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HideFiles", "HideFiles\HideFiles.vcxproj", "{75393D56-1B7E-4094-80D8-645A4FC4244C}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "HideFIlesClient", "HideFIlesClient\HideFIlesClient.vcxproj", "{3E91AAD1-D08B-4FA1-8978-BDA48E7DC664}"
+	ProjectSection(ProjectDependencies) = postProject
+		{75393D56-1B7E-4094-80D8-645A4FC4244C} = {75393D56-1B7E-4094-80D8-645A4FC4244C}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
