@@ -6,7 +6,7 @@
 //
 //  Callback to notify a filter it has received a message from a user App
 //
-
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS HideMessageNotifyCallback(
     _In_opt_ PVOID PortCookie,
     _In_reads_bytes_opt_(InputBufferLength) PVOID InputBuffer,
@@ -16,6 +16,13 @@ NTSTATUS HideMessageNotifyCallback(
     _Out_ PULONG ReturnOutputBufferLength
 )
 {
+    UNREFERENCED_PARAMETER(PortCookie);
+    UNREFERENCED_PARAMETER(InputBuffer);
+    UNREFERENCED_PARAMETER(InputBufferLength);
+    UNREFERENCED_PARAMETER(OutputBuffer);
+    UNREFERENCED_PARAMETER(OutputBufferLength);
+    UNREFERENCED_PARAMETER(ReturnOutputBufferLength);
+
     NTSTATUS status = -1;
 
     return status;
@@ -24,7 +31,7 @@ NTSTATUS HideMessageNotifyCallback(
 //
 //  Callback to notify a filter when a new connection to a port is established
 //
-
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS HideConnectCallback(
     _In_ PFLT_PORT ClientPort,
     _In_opt_ PVOID ServerPortCookie,
@@ -33,7 +40,16 @@ NTSTATUS HideConnectCallback(
     _Outptr_result_maybenull_ PVOID *ConnectionPortCookie
 )
 {
-    NTSTATUS status = -1;
+    UNREFERENCED_PARAMETER(ServerPortCookie);
+    UNREFERENCED_PARAMETER(ConnectionContext);
+    UNREFERENCED_PARAMETER(SizeOfContext);
+    UNREFERENCED_PARAMETER(ConnectionPortCookie);
+
+    NTSTATUS status = STATUS_SUCCESS;
+
+    FltAcquirePushLockExclusive(&g_ClientCommPortLock);
+    g_pClientPort = ClientPort;
+    FltReleasePushLock(&g_ClientCommPortLock);
 
     return status;
 }
@@ -41,24 +57,34 @@ NTSTATUS HideConnectCallback(
 //
 //  Callback to notify a filter when a connection to a port is being torn down
 //
+_IRQL_requires_max_(APC_LEVEL)
 VOID HideDisconnectCallback(
     _In_opt_ PVOID ConnectionCookie
 )
 {
-    NTSTATUS status = -1;
+    UNREFERENCED_PARAMETER(ConnectionCookie);
 
-    return status;
+    FltAcquirePushLockExclusive(&g_ClientCommPortLock);
+    if (NULL != g_FilterInstance
+        && NULL != g_pClientPort) {
+        FltCloseClientPort(g_FilterInstance, &g_pClientPort);
+        g_pClientPort = NULL;
+    }
+
+    FltReleasePushLock(&g_ClientCommPortLock);
 }
 
-
-NTSTATUS CreateCommunicationPort(PFLT_FILTER Filter)
+_IRQL_requires_max_(APC_LEVEL)
+NTSTATUS CreateCommunicationPort(
+    _In_ PFLT_FILTER Filter
+)
 {
     PAGED_CODE();
 
     PSECURITY_DESCRIPTOR        pSD = NULL;
     OBJECT_ATTRIBUTES           oa = {0};
     NTSTATUS                    status = -1;
-
+    UNICODE_STRING              commPortName = {0};
 
     if (NULL == Filter) {
         status = STATUS_INVALID_PARAMETER;
@@ -71,14 +97,17 @@ NTSTATUS CreateCommunicationPort(PFLT_FILTER Filter)
         goto EXIT;
     }
 
+    RtlInitUnicodeString(&commPortName,
+        g_pszCommunicationPortName);
+
     InitializeObjectAttributes(&oa,
-        g_pszCommunicationPortName,
+        &commPortName,
         OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE,
         NULL,
         pSD);
 
     status = FltCreateCommunicationPort(Filter,
-        g_pServerPort,
+        &g_pServerPort,
         &oa,
         NULL,
         HideConnectCallback,
@@ -89,6 +118,7 @@ NTSTATUS CreateCommunicationPort(PFLT_FILTER Filter)
         goto EXIT;
     }
 
+    FltInitializePushLock(&g_ClientCommPortLock);
 EXIT:
     if (NULL != pSD) {
         FltFreeSecurityDescriptor(pSD);
@@ -96,10 +126,12 @@ EXIT:
     return status;
 }
 
-
-NTSTATUS CloseCommunicationPort(PFLT_PORT pFltPort)
+_IRQL_requires_max_(APC_LEVEL)
+NTSTATUS CloseCommunicationPort(
+    _In_ PFLT_PORT pFltPort
+)
 {
-    NTSTATUS                    status = STATUS_SUCCESS;
+    NTSTATUS          status = STATUS_SUCCESS;
     
     if (NULL == pFltPort)
     {
