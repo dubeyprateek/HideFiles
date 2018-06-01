@@ -30,6 +30,9 @@
     <ClCompile Include="FIleServce.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Communications.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HideFiles.rc">
@@ -38,6 +41,9 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="FIleServce.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Communications.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

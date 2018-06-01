@@ -36,6 +36,7 @@
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="HideFiles.rc" />
+    <ClCompile Include="Communications.c" />
     <ClCompile Include="FIleServce.c" />
     <ClCompile Include="HideFiles.c" />
     <Inf Include="HideFiles.inf" />
@@ -184,6 +185,7 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Communications.h" />
     <ClInclude Include="FIleServce.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
