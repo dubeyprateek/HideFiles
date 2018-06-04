@@ -46,5 +46,8 @@
     <ClInclude Include="Communications.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="GlobalExclusionList.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

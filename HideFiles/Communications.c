@@ -65,9 +65,9 @@ VOID HideDisconnectCallback(
     UNREFERENCED_PARAMETER(ConnectionCookie);
 
     FltAcquirePushLockExclusive(&g_ClientCommPortLock);
-    if (NULL != g_FilterInstance
+    if (NULL != gFilterHandle
         && NULL != g_pClientPort) {
-        FltCloseClientPort(g_FilterInstance, &g_pClientPort);
+        FltCloseClientPort(gFilterHandle, &g_pClientPort);
         g_pClientPort = NULL;
     }
 
