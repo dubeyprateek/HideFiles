@@ -1,13 +1,12 @@
-#include "FIleServce.h"
-#include <Wdm.h> 
-#include <Ntddk.h>
-#include <wdmsec.h>
+#include "FileServce.h"
+#include "Communications.h"
 #include <ntstrsafe.h>
 #include <stdlib.h>
 
 
 #pragma comment (lib,"NtosKrnl")
 
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS InitializeLists()
 {
     PAGED_CODE();
@@ -19,6 +18,8 @@ NTSTATUS InitializeLists()
     return 0;
 }
 
+
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS FindNode(PLIST_ENTRY ptargetList, PWCHAR pszFQPN, PLIST_ENTRY *pNode)
 {
     PAGED_CODE();
@@ -54,14 +55,18 @@ NTSTATUS FindNode(PLIST_ENTRY ptargetList, PWCHAR pszFQPN, PLIST_ENTRY *pNode)
         }
         pListEntry = pListEntry->Flink;
     }
+    
     if (FALSE == bFound)
     {
         status = STATUS_NOT_FOUND;
     }
+
 EXIT:
     return status;
 }
 
+
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS InstertPathInList(PLIST_ENTRY ptargetList, PWCHAR pszFQPN)
 {
     PAGED_CODE();
@@ -111,12 +116,16 @@ NTSTATUS InstertPathInList(PLIST_ENTRY ptargetList, PWCHAR pszFQPN)
 
 EXIT:
     if (!NT_SUCCESS(status)) {
-        ExFreePoolWithTag(pszFQPNDriverBuffer,
-            HideFilePoolTag);
+        if (NULL != pszFQPNDriverBuffer) {
+            ExFreePoolWithTag(pszFQPNDriverBuffer,
+                HideFilePoolTag);
+        }
     }
     return status;
 }
 
+
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS InsertPathInExclusionList(PWCHAR pszFQPN)
 {
     PAGED_CODE();
@@ -129,17 +138,28 @@ NTSTATUS InsertPathInExclusionList(PWCHAR pszFQPN)
 
 }
 
+
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS InsertPathInInclusionFileList(PWCHAR pszFQPN)
 {
     PAGED_CODE();
 
     NTSTATUS status = -1;
 
+    if(NULL == pszFQPN)
+
+    status = FilterFromGlobalExcusionList(pszFQPN);
+    if (!NT_SUCCESS(status)) {
+        goto EXIT;
+    }
+
     status = InstertPathInList(&FileListToHide, pszFQPN);
 
+EXIT:
     return status;
 }
 
+_IRQL_requires_max_(APC_LEVEL)
 NTSTATUS InsertPathInInclusionFolderList(PWCHAR pszFQPN)
 {
     PAGED_CODE();
@@ -149,4 +169,20 @@ NTSTATUS InsertPathInInclusionFolderList(PWCHAR pszFQPN)
 
     return status;
 
+}
+
+
+_IRQL_requires_max_(APC_LEVEL)
+NTSTATUS IsFileExist(PWCHAR pszFQPN)
+{
+    PAGED_CODE();
+
+    UNREFERENCED_PARAMETER(pszFQPN);
+    NTSTATUS status = -1;
+
+    if (!NT_SUCCESS(status)) {
+        goto EXIT;
+    }
+EXIT:
+    return status;
 }

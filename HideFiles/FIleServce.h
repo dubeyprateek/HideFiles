@@ -1,6 +1,6 @@
 #ifndef __FILE_SERVICE__H
 #define __FILE_SERVICE__H
-#include <Wdm.h>
+#include <fltKernel.h>
 
 CONST ULONG HideFilePoolTag = 'EDIH';
 
@@ -15,12 +15,12 @@ LIST_ENTRY FileListToHide;
 LIST_ENTRY FolderListToHide;
 
 
-
-
 NTSTATUS InitializeLists();
 NTSTATUS InstertPathInList(PLIST_ENTRY ptargetList, PWCHAR pszFQPN);
 NTSTATUS InsertPathInExclusionList(PWCHAR pszFQPN);
 NTSTATUS InsertPathInInclusionFileList(PWCHAR pszFQPN);
 NTSTATUS InsertPathInInclusionFolderList(PWCHAR pszFQPN);
+NTSTATUS IsFileExist(PWCHAR pszFQPN);
+
 
 #endif

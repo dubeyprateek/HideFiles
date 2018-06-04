@@ -145,6 +145,10 @@
       <AdditionalDependencies>fltmgr.lib;%(AdditionalDependencies);NtosKrnl.lib</AdditionalDependencies>
       <AdditionalOptions>"C:\Program Files (x86)\Windows Kits\10\Lib\10.0.17134.0\km\x86\NtosKrnl.lib" %(AdditionalOptions)</AdditionalOptions>
     </Link>
+    <PostBuildEvent>
+      <Command>
+      </Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <Link>

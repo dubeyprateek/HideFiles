@@ -1,13 +1,7 @@
 #ifndef __FILE_COMMUNICATIONS__H
 #define __FILE_COMMUNICATIONS__H
 #pragma once
-#include <Wdm.h>
-
-PWCHAR                      g_pszCommunicationPortName = L"\\HideFilePort";
-PFLT_PORT                   g_pServerPort = NULL;
-PFLT_PORT                   g_pClientPort = NULL;
-EX_PUSH_LOCK                g_ClientCommPortLock;
-extern PFLT_FILTER          gFilterHandle;
+#include <fltKernel.h>
 
 _IRQL_requires_max_(APC_LEVEL)
 NTSTATUS CreateCommunicationPort(
@@ -52,10 +46,7 @@ VOID HideDisconnectCallback(
     _In_opt_ PVOID ConnectionCookie
 );
 
-NTSTATUS PrepareGlobalExclusionList()
-{
-    NTSTATUS status = STATUS_SUCCESS;
-}
+NTSTATUS FilterFromGlobalExcusionList(const PWCHAR pszFilePath);
 
 
 #endif

@@ -1,7 +1,15 @@
-#include <fltKernel.h>
 #include "Communications.h"
+#include "GlobalExclusionList.h"
 
 #pragma comment (lib,"FltMgr")
+
+PWCHAR               g_pszCommunicationPortName = L"\\HideFilePort";
+PFLT_PORT            g_pServerPort = NULL;
+PFLT_PORT            g_pClientPort = NULL;
+EX_PUSH_LOCK         g_ClientCommPortLock;
+
+
+extern PFLT_FILTER gFilterHandle;
 
 //
 //  Callback to notify a filter it has received a message from a user App
@@ -141,5 +149,36 @@ NTSTATUS CloseCommunicationPort(
     FltCloseCommunicationPort(pFltPort);
 
 EXIT:
+    return status;
+}
+
+_IRQL_requires_max_(APC_LEVEL)
+NTSTATUS FilterFromGlobalExcusionList(
+    const PWCHAR pszFilePath
+)
+{
+    NTSTATUS            status = STATUS_SUCCESS;
+    int                 iCount = 0;
+    UNICODE_STRING      unicodeExclusionPath = {0};
+    UNICODE_STRING      unicodePath = {0};
+
+    RtlInitUnicodeString(&unicodePath, 
+        pszFilePath);
+
+    while (gGlobalExcusionList[iCount] != NULL)
+    {
+        RtlInitUnicodeString(&unicodeExclusionPath, 
+            gGlobalExcusionList[iCount]);
+
+        if (TRUE == FsRtlIsNameInExpression(
+            &unicodeExclusionPath,
+            &unicodeExclusionPath,
+            TRUE,
+            0))
+        {
+            status = STATUS_INVALID_PARAMETER;
+            break;
+        }
+    }
     return status;
 }

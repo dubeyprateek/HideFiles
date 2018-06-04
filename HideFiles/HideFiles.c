@@ -574,12 +574,6 @@ Return Value:
     if (NT_SUCCESS( status )) {
 
         //
-        // Prepare the exclusion list
-        //
-
-
-
-        //
         //  Start filtering i/o
         //
 
