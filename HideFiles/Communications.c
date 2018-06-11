@@ -8,6 +8,7 @@ PWCHAR               g_pszCommunicationPortName = L"\\HideFilePort";
 PFLT_PORT            g_pServerPort = NULL;
 PFLT_PORT            g_pClientPort = NULL;
 EX_PUSH_LOCK         g_ClientCommPortLock;
+extern ULONG         HideFilePoolTag;
 
 
 extern PFLT_FILTER gpFilterHandle;
@@ -100,7 +101,18 @@ NTSTATUS CreateCommunicationPort(
         goto EXIT;
     }
 
-    status = FltBuildDefaultSecurityDescriptor(pSD,
+    ////
+    //// Allocate the SD
+    ////
+
+    //pSD = ExAllocatePoolWithTag(PagedPool,
+    //    sizeof(SECURITY_DESCRIPTOR),
+    //    HideFilePoolTag);
+    //if (NULL == pSD) {
+    //    goto EXIT;
+    //}
+
+    status = FltBuildDefaultSecurityDescriptor(&pSD,
         FLT_PORT_ALL_ACCESS);
     if (!NT_SUCCESS(status)) {
         goto EXIT;

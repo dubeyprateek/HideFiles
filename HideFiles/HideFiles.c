@@ -17,6 +17,7 @@ Environment:
 #include <fltKernel.h>
 #include <dontuse.h>
 #include <suppress.h>
+#include "Communications.h"
 
 #pragma warning( disable : 4047 24 )
 
@@ -577,14 +578,27 @@ Return Value:
         //  Start filtering i/o
         //
 
+        status = CreateCommunicationPort(gpFilterHandle);
+        if (!NT_SUCCESS(status))
+        {
+            goto EXIT;
+        }
+
         status = FltStartFiltering( gpFilterHandle );
 
         if (!NT_SUCCESS( status )) {
-
-            FltUnregisterFilter( gpFilterHandle );
+            goto EXIT;
         }
     }
 
+EXIT:
+    if (!NT_SUCCESS(status)) {
+        if (gpFilterHandle) {
+            FltUnregisterFilter(gpFilterHandle);
+        }
+        gpFilterHandle = NULL;
+    }
+    
     return status;
 }
 
