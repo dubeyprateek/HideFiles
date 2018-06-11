@@ -20,7 +20,11 @@ NTSTATUS InitializeLists()
 
 
 _IRQL_requires_max_(APC_LEVEL)
-NTSTATUS FindNode(PLIST_ENTRY ptargetList, PWCHAR pszFQPN, PLIST_ENTRY *pNode)
+NTSTATUS FindNode(
+    PLIST_ENTRY ptargetList, 
+    PWCHAR pszFQPN, 
+    PLIST_ENTRY *pNode
+)
 {
     PAGED_CODE();
 
@@ -67,7 +71,10 @@ EXIT:
 
 
 _IRQL_requires_max_(APC_LEVEL)
-NTSTATUS InstertPathInList(PLIST_ENTRY ptargetList, PWCHAR pszFQPN)
+NTSTATUS InstertPathInList(
+    PLIST_ENTRY ptargetList, 
+    PWCHAR pszFQPN
+)
 {
     PAGED_CODE();
 
@@ -126,7 +133,9 @@ EXIT:
 
 
 _IRQL_requires_max_(APC_LEVEL)
-NTSTATUS InsertPathInExclusionList(PWCHAR pszFQPN)
+NTSTATUS InsertPathInExclusionList(
+    PWCHAR pszFQPN
+)
 {
     PAGED_CODE();
 
@@ -140,7 +149,9 @@ NTSTATUS InsertPathInExclusionList(PWCHAR pszFQPN)
 
 
 _IRQL_requires_max_(APC_LEVEL)
-NTSTATUS InsertPathInInclusionFileList(PWCHAR pszFQPN)
+NTSTATUS InsertPathInInclusionFileList(
+    PWCHAR pszFQPN
+)
 {
     PAGED_CODE();
 
@@ -160,7 +171,9 @@ EXIT:
 }
 
 _IRQL_requires_max_(APC_LEVEL)
-NTSTATUS InsertPathInInclusionFolderList(PWCHAR pszFQPN)
+NTSTATUS InsertPathInInclusionFolderList(
+    PWCHAR pszFQPN
+)
 {
     PAGED_CODE();
     NTSTATUS status = -1;
@@ -173,16 +186,82 @@ NTSTATUS InsertPathInInclusionFolderList(PWCHAR pszFQPN)
 
 
 _IRQL_requires_max_(APC_LEVEL)
-NTSTATUS IsFileExist(PWCHAR pszFQPN)
+NTSTATUS IsPathExists(
+    _In_ PFLT_FILTER pFilter,
+    _In_ PCFLT_RELATED_OBJECTS FltObjects,
+    _In_ PWCHAR pszFQPN,
+    _In_ BOOLEAN isDirectory
+)
 {
     PAGED_CODE();
 
-    UNREFERENCED_PARAMETER(pszFQPN);
-    NTSTATUS status = -1;
+    NTSTATUS                    status = -1;
+    HANDLE                      hFileHandle = NULL;
+    PSECURITY_DESCRIPTOR        pSD = NULL;
+    OBJECT_ATTRIBUTES           oa = { 0 };
+    UNICODE_STRING              pFQPN = { 0 };
+    IO_STATUS_BLOCK             ioStatusBlock = {0};
 
+    if (NULL == pszFQPN) {
+        status = PHCM_ERROR_INVALID_PARAMETER;
+        goto EXIT;
+    }
+    status = FltBuildDefaultSecurityDescriptor(pSD,
+        FLT_PORT_ALL_ACCESS);
     if (!NT_SUCCESS(status)) {
         goto EXIT;
     }
+
+    RtlInitUnicodeString(&pFQPN,
+        pszFQPN);
+
+    InitializeObjectAttributes(&oa,
+        &pFQPN,
+        OBJ_KERNEL_HANDLE | OBJ_CASE_INSENSITIVE,
+        NULL,
+        pSD);
+
+    //
+    // Try to create a file and send it to low level drivers
+    //
+    status = FltCreateFile(pFilter,
+        FltObjects->Instance,
+        &hFileHandle,
+        READ_CONTROL,
+        &oa,
+        &ioStatusBlock,
+        0,
+        FILE_ATTRIBUTE_NORMAL,
+        FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+        FILE_OPEN,
+        isDirectory ? FILE_DIRECTORY_FILE : FILE_NON_DIRECTORY_FILE,
+        NULL,
+        0,
+        IO_IGNORE_SHARE_ACCESS_CHECK);
+    if (!NT_SUCCESS(status)) {
+        goto EXIT;
+    }
+
+    if (ioStatusBlock.Status == FILE_OPENED ||
+        ioStatusBlock.Status == FILE_EXISTS) {
+        
+        //
+        // Close the file handle 
+        //
+        status = FltClose(hFileHandle);
+        if (!NT_SUCCESS(status)) {
+            goto EXIT;
+        }
+
+        //
+        // File exists return success to the caller.
+        //
+        status = STATUS_SUCCESS;
+    }
+
 EXIT:
+    if (NULL != pSD) {
+        FltFreeSecurityDescriptor(pSD);
+    }
     return status;
 }

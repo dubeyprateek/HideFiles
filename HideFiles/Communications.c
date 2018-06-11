@@ -1,5 +1,6 @@
 #include "Communications.h"
 #include "GlobalExclusionList.h"
+#include"..\Common\Comm.h"
 
 #pragma comment (lib,"FltMgr")
 
@@ -9,7 +10,7 @@ PFLT_PORT            g_pClientPort = NULL;
 EX_PUSH_LOCK         g_ClientCommPortLock;
 
 
-extern PFLT_FILTER gFilterHandle;
+extern PFLT_FILTER gpFilterHandle;
 
 //
 //  Callback to notify a filter it has received a message from a user App
@@ -73,9 +74,9 @@ VOID HideDisconnectCallback(
     UNREFERENCED_PARAMETER(ConnectionCookie);
 
     FltAcquirePushLockExclusive(&g_ClientCommPortLock);
-    if (NULL != gFilterHandle
+    if (NULL != gpFilterHandle
         && NULL != g_pClientPort) {
-        FltCloseClientPort(gFilterHandle, &g_pClientPort);
+        FltCloseClientPort(gpFilterHandle, &g_pClientPort);
         g_pClientPort = NULL;
     }
 

@@ -189,6 +189,7 @@
     <FilesToPackage Include="$(TargetPath)" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\Common\Comm.h" />
     <ClInclude Include="Communications.h" />
     <ClInclude Include="FIleServce.h" />
     <ClInclude Include="GlobalExclusionList.h" />

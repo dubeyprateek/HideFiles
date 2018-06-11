@@ -28,7 +28,7 @@ Environment:
 #define DPFLTR_INFO_LEVEL 3
 #define DPFLTR_MASK 0x80000000
 
-PFLT_FILTER gFilterHandle;
+PFLT_FILTER gpFilterHandle;
 ULONG_PTR OperationStatusCtx = 1;
 
 
@@ -567,7 +567,7 @@ Return Value:
 
     status = FltRegisterFilter( DriverObject,
                                 &FilterRegistration,
-                                &gFilterHandle );
+                                &gpFilterHandle);
 
     FLT_ASSERT( NT_SUCCESS( status ) );
 
@@ -577,11 +577,11 @@ Return Value:
         //  Start filtering i/o
         //
 
-        status = FltStartFiltering( gFilterHandle );
+        status = FltStartFiltering( gpFilterHandle );
 
         if (!NT_SUCCESS( status )) {
 
-            FltUnregisterFilter( gFilterHandle );
+            FltUnregisterFilter( gpFilterHandle );
         }
     }
 
@@ -618,7 +618,7 @@ Return Value:
     PT_DBG_PRINT( DPFLTR_TRACE_LEVEL,
                   ("HideFiles!HideFilesUnload: Entered\n") );
 
-    FltUnregisterFilter( gFilterHandle );
+    FltUnregisterFilter(gpFilterHandle);
 
     return STATUS_SUCCESS;
 }
